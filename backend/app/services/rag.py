@@ -101,23 +101,26 @@ def _load():
     return _cache["rows"], _cache["mat"]
 
 
+_STOP = set("a an the of in on at to for is are was were be been do does did which what who whom whose when where why how me my our your we you i it its this that these those and or but not with from by about any all some there here underway ongoing currently list show tell give please can could should would have has had into over under near".split())
+
+
 def _fts(query: str, k: int, kinds: set[str] | None) -> list[dict]:
-    """Keyword retrieval in Postgres (works for English and Devanagari). Used when EMBEDDINGS=false."""
-    rows = db.q(
-        """select source_type, source_id, title, url, body, ts_rank(to_tsvector('simple', title || ' ' || body), q) as rank
-           from doc_chunks, websearch_to_tsquery('simple', %s) q
-           where to_tsvector('simple', title || ' ' || body) @@ q order by rank desc limit %s""",
-        (query, k * 2),
-    )
-    if not rows:  # OR-match on the individual words instead of requiring all of them
-        words = [w.strip("?.,!'\"") for w in query.split() if len(w) > 2][:8]
-        words = [w for w in words if w.replace("'", "").isalnum()]
-        if words:
-            rows = db.q(
-                """select source_type, source_id, title, url, body, 0.1::real as rank from doc_chunks
-                   where to_tsvector('simple', title || ' ' || body) @@ to_tsquery('simple', %s) limit %s""",
-                (" | ".join(words), k * 2),
-            )
+    """Keyword retrieval in Postgres (English and Devanagari). Used when EMBEDDINGS=false (small hosts)."""
+    import re
+
+    words = [w for w in re.findall(r"[\wऀ-ॿ]+", query.lower()) if len(w) > 1 and w not in _STOP][:8]
+    if not words:
+        return []
+    vec = "to_tsvector('simple', title || ' ' || body)"
+    rows: list[dict] = []
+    for joiner in (" & ", " | "):  # every word first, then any word ranked by how many match
+        rows = db.q(
+            f"""select source_type, source_id, title, url, body, ts_rank({vec}, q) as rank
+                from doc_chunks, to_tsquery('simple', %s) q where {vec} @@ q order by rank desc limit %s""",
+            (joiner.join(words), k * 3),
+        )
+        if rows:
+            break
     return [{"type": r["source_type"], "id": r["source_id"], "title": r["title"], "url": r["url"], "text": r["body"], "score": round(float(r["rank"]), 3)}
             for r in rows if not kinds or r["source_type"] in kinds][:k]
 
