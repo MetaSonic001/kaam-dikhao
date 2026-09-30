@@ -1,0 +1,8 @@
+_legacy
+backend/.venv
+backend/data
+backend/**/__pycache__
+*.log
+web.log
+dev.log
+public/maplibre

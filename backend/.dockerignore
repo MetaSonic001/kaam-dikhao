@@ -1,0 +1,7 @@
+.venv
+/data
+__pycache__
+**/__pycache__
+*.log
+*.err
+.pip.log

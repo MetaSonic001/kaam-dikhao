@@ -15,7 +15,7 @@ from pydantic import BaseModel
 
 from . import auth, db
 from .cities import CITIES
-from .config import get_settings
+from .config import SERVERLESS, get_settings
 from .routes import assistant, insights, moderation, records, reports, sites
 from .etl import official
 from .services import geocode, osm, rag, storage
@@ -58,6 +58,9 @@ def _bootstrap() -> None:
 async def lifespan(app: FastAPI):
     db.init_schema()
     storage.ensure_bucket()
+    if SERVERLESS:  # no background threads or scheduler; an external cron calls /api/cron/sync instead
+        yield
+        return
     threading.Thread(target=_bootstrap, daemon=True, name="bootstrap").start()
     # Refresh every city every 6 hours, staggered. In-process scheduler: no Redis, no workers.
     for i, c in enumerate(CITIES):

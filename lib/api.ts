@@ -1,4 +1,13 @@
-export const API = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+// Browser: same origin on Vercel (the /api/* rewrite routes to the backend service), localhost:8000 in local dev.
+export const API = process.env.NEXT_PUBLIC_API_URL ?? (process.env.NODE_ENV === "production" ? "" : "http://localhost:8000");
+
+/** Absolute URL for a backend path. On the server Vercel injects BACKEND_URL (service binding); relative URLs do not work there. */
+export function apiUrl(path: string): string {
+  if (typeof window !== "undefined") return `${API}${path}`;
+  const bound = process.env.BACKEND_URL;
+  if (bound) return new URL(path.replace(/^\//, ""), bound.endsWith("/") ? bound : `${bound}/`).toString();
+  return `${API || "http://localhost:8000"}${path}`;
+}
 
 export class ApiError extends Error {
   constructor(public status: number, message: string) {
@@ -34,7 +43,7 @@ export async function api<T>(path: string, opts: Opts = {}): Promise<T> {
     headers["Content-Type"] = "application/json";
     body = JSON.stringify(opts.json);
   }
-  const res = await fetch(`${API}${path}`, {
+  const res = await fetch(apiUrl(path), {
     method: opts.method ?? (body ? "POST" : "GET"),
     headers,
     body,

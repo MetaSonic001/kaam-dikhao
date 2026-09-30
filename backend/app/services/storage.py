@@ -6,10 +6,10 @@ from pathlib import Path
 
 import httpx
 
-from ..config import ROOT, get_settings
+from ..config import DATA_DIR, get_settings
 
 log = logging.getLogger("kd.storage")
-LOCAL_DIR = ROOT / "backend" / "data" / "media"
+LOCAL_DIR = DATA_DIR / "media"
 _ready: bool | None = None
 
 

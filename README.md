@@ -52,6 +52,18 @@ context/                    product, architecture, legal and workflow notes
 
 Key backend services: `osm.py` (live works + completion detection), `satellite.py` (STAC + rasterio), `media.py` (EXIF + face blur), `guard.py` (PII + neutral language), `scoring.py` (explainable health score), `rag.py` (fastembed + numpy cosine in Postgres), `rti.py`, `llm.py` (Groq).
 
+## Deploy: web on Vercel, API on Render (free)
+
+**API on Render.** `render.yaml` is a Blueprint: *New > Blueprint*, pick the repo, then fill the secret variables it lists (`DATABASE_URL`, `SUPABASE_URL`, `SUPABASE_SECRET_KEY`, `GROQ_API_KEY`, the two Clerk keys, `ADMIN_EMAILS`, `GRIEVANCE_EMAIL`, `CORS_ORIGINS`, `APP_URL`). `CRON_SECRET` is generated for you; copy it for the step below. It builds `backend/Dockerfile` (plate-detection models baked in).
+
+The free plan has 512 MB of RAM and sleeps after 15 minutes idle, so two settings are preset:
+* `EMBEDDINGS=false`: Ask AI uses Postgres full-text search instead of the 400 MB embedding model. Answers still cite records; retrieval is keyword-based (weaker for Hindi/Marathi questions). On a 1 GB+ plan set `EMBEDDINGS=true` and build with `BAKE_EMBEDDINGS=true`.
+* `KD_SERVERLESS=true`: no in-process scheduler. `.github/workflows/sync.yml` calls `/api/cron/sync` every 6 hours (wakes the API, syncs the stalest city, backfills wards, re-indexes). Add repo secrets `API_URL` (your `https://...onrender.com`) and `CRON_SECRET`.
+
+First request after a sleep takes about a minute; a free uptime pinger (for example UptimeRobot on `/api/health` every 10 minutes) keeps it awake.
+
+**Web on Vercel.** Import the repo as a normal Next.js project and set `NEXT_PUBLIC_API_URL=https://<your-render-service>.onrender.com`, the Clerk keys, `NEXT_PUBLIC_GRIEVANCE_EMAIL`, `NEXT_PUBLIC_APP_URL`. Do not set `NEXT_PUBLIC_DEV_USER`. In Clerk, add your production domain.
+
 ## Design rules that matter
 
 1. Nothing citizen-submitted is public until a human moderator approves it.

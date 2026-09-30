@@ -1,0 +1,26 @@
+# Render Blueprint: New > Blueprint > pick this repo. Free plan (512 MB, sleeps after 15 min idle).
+services:
+  - type: web
+    name: kaam-dikhao-api
+    runtime: docker
+    plan: free
+    region: singapore              # closest free region to India
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /api/health
+    autoDeploy: true
+    envVars:
+      - { key: APP_ENV, value: production }
+      - { key: KD_SERVERLESS, value: "true" }     # no in-process scheduler; GitHub Actions calls /api/cron/sync
+      - { key: EMBEDDINGS, value: "false" }       # Postgres full-text search for Ask AI (fits 512 MB)
+      - { key: DATABASE_URL, sync: false }
+      - { key: SUPABASE_URL, sync: false }
+      - { key: SUPABASE_SECRET_KEY, sync: false }
+      - { key: GROQ_API_KEY, sync: false }
+      - { key: NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY, sync: false }
+      - { key: CLERK_SECRET_KEY, sync: false }
+      - { key: ADMIN_EMAILS, sync: false }
+      - { key: GRIEVANCE_EMAIL, sync: false }
+      - { key: CORS_ORIGINS, sync: false }        # https://your-domain.in
+      - { key: APP_URL, sync: false }
+      - { key: CRON_SECRET, generateValue: true }

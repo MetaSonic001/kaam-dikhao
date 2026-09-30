@@ -4,7 +4,14 @@ from pathlib import Path
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+import os
+
 ROOT = Path(__file__).resolve().parents[2]
+ON_VERCEL = bool(os.environ.get("VERCEL"))
+# Hosts that sleep or restart (Vercel, Render free): no in-process scheduler; an external cron calls /api/cron/sync.
+SERVERLESS = ON_VERCEL or os.environ.get("KD_SERVERLESS", "").lower() in ("1", "true", "yes")
+# Serverless filesystems are read-only except /tmp
+DATA_DIR = Path(os.environ.get("DATA_DIR") or ("/tmp/kaam-dikhao" if ON_VERCEL else ROOT / "backend" / "data"))
 
 
 class Settings(BaseSettings):
@@ -43,6 +50,8 @@ class Settings(BaseSettings):
     )
 
     sync_on_startup: bool = True
+    embeddings: bool = True  # false = Postgres full-text search for Ask AI (no 400 MB model; fits 512 MB hosts)
+    cron_secret: str = ""  # Vercel Cron sends this as a Bearer token
     default_city: str = "mumbai"
 
     @property

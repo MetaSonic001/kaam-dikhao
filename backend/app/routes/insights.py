@@ -1,7 +1,7 @@
 """Public aggregates: stats, cities, report cards, civic watch, sync status, unified search."""
 from __future__ import annotations
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 
 from .. import auth, db
 from ..cities import CITIES, NATIONAL_LINKS
@@ -149,6 +149,27 @@ def search(q: str):
     rtis = db.q("select id, subject, authority, outcome from rtis where status='PUBLISHED' and (subject ilike %s or authority ilike %s) limit 5", (like, like))
     places = geocode.search(q, 4) if len(q) >= 3 else []
     return {"sites": sites, "areas": areas, "rtis": rtis, "places": places}
+
+
+@router.get("/cron/sync")
+def cron_sync(request: Request):
+    """Vercel Cron: sync the city whose data is stalest (one per call keeps it inside the function time limit)."""
+    from ..config import get_settings
+
+    secret = get_settings().cron_secret
+    if not secret or request.headers.get("authorization") != f"Bearer {secret}":
+        raise HTTPException(401, "Unauthorized")
+    keys = ", ".join(f"('{k}')" for k in CITIES)  # keys come from our own constant, not user input
+    row = db.one(f"""select c.key from (values {keys}) as c(key)
+                     left join (select scope, max(started_at) t from sync_runs where source='osm-overpass' group by scope) r on r.scope = c.key
+                     order by r.t nulls first limit 1""")
+    result = osm.sync_city(row["key"])
+    from ..etl import official
+
+    official.run()
+    geocode.backfill_sites(40)  # localities and wards, 1 request/second, bounded to fit the request time
+    rag.reindex()
+    return {"synced": result}
 
 
 @router.post("/admin/etl/official")

@@ -9,7 +9,7 @@ from pathlib import Path
 import numpy as np
 
 from .. import db
-from ..config import ROOT
+from ..config import DATA_DIR, get_settings
 
 log = logging.getLogger("kd.rag")
 MODEL = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
@@ -24,7 +24,7 @@ def _embedder():
         if _model is None:
             from fastembed import TextEmbedding
 
-            _model = TextEmbedding(MODEL, cache_dir=str(ROOT / "backend" / "data" / "models"))
+            _model = TextEmbedding(MODEL, cache_dir=str(DATA_DIR / "models"))
         return _model
 
 
@@ -34,7 +34,7 @@ def embed(texts: list[str]) -> np.ndarray:
 
 
 def upsert(source_type: str, source_id: str, title: str, url: str, body: str) -> None:
-    v = embed([f"{title}\n{body}"[:1500]])[0].tolist()
+    v = embed([f"{title}\n{body}"[:1500]])[0].tolist() if get_settings().embeddings else None
     db.run(
         """insert into doc_chunks(source_type,source_id,title,url,body,embedding) values(%s,%s,%s,%s,%s,%s)
            on conflict (source_type, source_id) do update set title=excluded.title, url=excluded.url,
@@ -101,7 +101,30 @@ def _load():
     return _cache["rows"], _cache["mat"]
 
 
+def _fts(query: str, k: int, kinds: set[str] | None) -> list[dict]:
+    """Keyword retrieval in Postgres (works for English and Devanagari). Used when EMBEDDINGS=false."""
+    rows = db.q(
+        """select source_type, source_id, title, url, body, ts_rank(to_tsvector('simple', title || ' ' || body), q) as rank
+           from doc_chunks, websearch_to_tsquery('simple', %s) q
+           where to_tsvector('simple', title || ' ' || body) @@ q order by rank desc limit %s""",
+        (query, k * 2),
+    )
+    if not rows:  # OR-match on the individual words instead of requiring all of them
+        words = [w.strip("?.,!'\"") for w in query.split() if len(w) > 2][:8]
+        words = [w for w in words if w.replace("'", "").isalnum()]
+        if words:
+            rows = db.q(
+                """select source_type, source_id, title, url, body, 0.1::real as rank from doc_chunks
+                   where to_tsvector('simple', title || ' ' || body) @@ to_tsquery('simple', %s) limit %s""",
+                (" | ".join(words), k * 2),
+            )
+    return [{"type": r["source_type"], "id": r["source_id"], "title": r["title"], "url": r["url"], "text": r["body"], "score": round(float(r["rank"]), 3)}
+            for r in rows if not kinds or r["source_type"] in kinds][:k]
+
+
 def search(query: str, k: int = 8, kinds: set[str] | None = None) -> list[dict]:
+    if not get_settings().embeddings:
+        return _fts(query, k, kinds)
     rows, mat = _load()
     if mat is None:
         return []

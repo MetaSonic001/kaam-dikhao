@@ -1,0 +1,17 @@
+# Keeps the free Render API awake and refreshes one city every 6 hours (stalest first).
+# Repo secrets: API_URL (https://kaam-dikhao-api.onrender.com) and CRON_SECRET (same value as on Render).
+name: sync-cities
+on:
+  schedule: [{ cron: "0 */6 * * *" }]
+  workflow_dispatch:
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Wake the API, then sync
+        run: |
+          curl -fsS --retry 5 --retry-delay 20 --max-time 120 "$API_URL/api/health" || true
+          curl -fsS --max-time 240 -H "Authorization: Bearer $CRON_SECRET" "$API_URL/api/cron/sync"
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}

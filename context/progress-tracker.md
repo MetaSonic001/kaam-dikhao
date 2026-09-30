@@ -26,7 +26,7 @@
 - [ ] Notifications for followed projects (dashboard shows follows only).
 - [ ] Dark theme toggle (tokens exist).
 - [ ] Automated tests (pytest for guard/scoring/matching; Playwright for the report flow).
-- [ ] Deploy: API on a small VM or Fly/Render (needs ~1 GB RAM for fastembed), web on Vercel or the same VM; set `APP_ENV=production`, real `NEXT_PUBLIC_API_URL`, `CORS_ORIGINS`.
+- [x] Deploy config: API on Render free (`render.yaml`, `backend/Dockerfile`, `EMBEDDINGS=false`, GitHub Actions cron), web on Vercel. Not yet deployed: run the steps in README.
 - [ ] Lawyer review of terms, grievance process and moderation policy.
 
 ## Decisions

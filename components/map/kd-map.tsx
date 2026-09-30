@@ -7,7 +7,7 @@ import { Layers, Locate, Satellite } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StatusBadge, CategoryChip } from "../badges";
-import { API, qs } from "@/lib/api";
+import { apiUrl, qs } from "@/lib/api";
 import { useT } from "@/lib/i18n";
 import { MAP_STATUS_LEGEND, STATUS_META } from "@/lib/meta";
 import { cn } from "@/lib/utils";
@@ -80,7 +80,7 @@ export function KdMap({
     const bbox = [b.getSouth(), b.getWest(), b.getNorth(), b.getEast()].join(",");
     setLoading(true);
     try {
-      const res = await fetch(`${API}/api/map${qs({ bbox, geom: m.getZoom() >= 11.5, q, city: undefined })}`, { cache: "no-store" });
+      const res = await fetch(apiUrl(`/api/map${qs({ bbox, geom: m.getZoom() >= 11.5, q, city: undefined })}`), { cache: "no-store" });
       const fc = (await res.json()) as GeoJSON.FeatureCollection;
       const pts = fc.features.filter((f) => f.geometry.type === "Point");
       const lines = fc.features.filter((f) => f.geometry.type !== "Point");
