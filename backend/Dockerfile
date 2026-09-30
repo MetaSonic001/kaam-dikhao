@@ -2,11 +2,13 @@
 FROM python:3.12-slim
 
 ENV PYTHONUNBUFFERED=1 PIP_NO_CACHE_DIR=1 DATA_DIR=/srv/data
-RUN apt-get update && apt-get install -y --no-install-recommends libglib2.0-0 libgomp1 && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends libglib2.0-0 libgomp1 libexpat1 && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /srv
 COPY requirements.txt .
 RUN pip install -r requirements.txt
+# Fail the build (not the deploy) if a native library is missing
+RUN python -c "import rasterio, cv2, numpy, PIL, psycopg, onnxruntime, groq, pystac_client, jwt"
 
 # Bake the small plate-detection models into the image (about 7 MB each) so a cold start never downloads them.
 RUN python -c "from open_image_models import create_detector; [create_detector(m) for m in ('yolo-v9-t-256-license-plate-end2end','yolo-v9-t-384-license-plate-end2end','yolo-v9-t-512-license-plate-end2end')]"
