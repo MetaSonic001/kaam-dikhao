@@ -1,0 +1,29 @@
+{
+  "_note": "Cabinet-approved programme costs transcribed from Government of India press releases (PIB / PMIndia). Every entry is loaded as a candidate document for moderator review; nothing is shown as verified until a moderator checks it against source_url. Amounts are for the whole programme and are never copied onto a single corridor.",
+  "records": [
+    {"id": "chennai-metro-phase-2", "programme": "Chennai Metro Rail Project Phase II (3 corridors, 118.9 km)", "amount_inr": 632460000000, "agency": "Chennai Metro Rail Limited",
+     "source_label": "PIB: Cabinet approves Chennai Metro Rail Project Phase II", "source_url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2061653",
+     "match": {"city": "Chennai", "category": "transit", "title_any": ["Madhavaram", "SIPCOT", "Poonamallee", "Light House", "Sholinganallur", "Shozhinganallur"]}},
+    {"id": "delhi-metro-phase-4-priority", "programme": "Delhi Metro Phase-IV: three priority corridors (61.7 km)", "amount_inr": 249486500000, "agency": "Delhi Metro Rail Corporation",
+     "source_label": "PMIndia: Cabinet approves Delhi Metro Phase-4 project", "source_url": "https://www.pmindia.gov.in/en/news_updates/cabinet-approves-delhi-metros-phase-4-project/",
+     "match": {"city": "Delhi", "category": "transit", "title_any": ["Krishna Park", "Tughlakabad", "Majlis Park", "Maujpur"]}},
+    {"id": "delhi-metro-rithala-kundli", "programme": "Delhi Metro Phase-IV: Rithala–Narela–Nathupur (Kundli) corridor (26.5 km)", "amount_inr": 62300000000, "agency": "Delhi Metro Rail Corporation",
+     "source_label": "PMIndia: Cabinet approves Rithala-Kundli corridor", "source_url": "https://www.pmindia.gov.in/en/news_updates/cabinet-approves-rithala-kundli-corridor-of-delhi-metro-phase-iv-project/",
+     "match": {"city": "Delhi", "category": "transit", "title_any": ["Rithala", "Narela", "Kundli", "Nathupur"]}},
+    {"id": "delhi-metro-inderlok-lajpat", "programme": "Delhi Metro Phase-IV: Inderlok–Indraprastha and Lajpat Nagar–Saket G Block corridors", "amount_inr": 83990000000, "agency": "Delhi Metro Rail Corporation",
+     "source_label": "PIB: Cabinet approves two corridors of Delhi Metro Phase-IV", "source_url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2014128&reg=48&lang=2",
+     "match": {"city": "Delhi", "category": "transit", "title_any": ["Indraprastha", "Inderlok", "Lajpat Nagar", "Saket"]}},
+    {"id": "thane-ring-metro", "programme": "Thane Integral Ring Metro Rail Project (29 km, 22 stations)", "amount_inr": 122001000000,
+     "source_label": "PIB: Cabinet approves Thane Integral Ring Metro Rail Project", "source_url": "https://www.pib.gov.in/PressReleseDetailm.aspx?PRID=2046082",
+     "match": {"city": "Mumbai", "category": "transit", "title_any": ["Thane Ring", "Thane Integral", "Ring Metro"]}},
+    {"id": "pune-metro-phase-2-line-4", "programme": "Pune Metro Phase-2: Kharadi–Khadakwasla (Line 4) and Nal Stop–Warje–Manik Baug (Line 4A)", "amount_inr": 98578500000,
+     "source_label": "PMIndia: Cabinet approves Pune Metro Rail Project Phase-2 (Line 4 and 4A)", "source_url": "https://www.pmindia.gov.in/en/news_updates/cabinet-approves-pune-metro-rail-project-phase-2-kharadi-khadakwasla-line-4-nal-stop-warje-manik-baug-line-4a/",
+     "match": {"city": "Pune", "category": "transit", "title_any": ["Kharadi", "Khadakwasla", "Warje", "Manik Baug", "Line 4"]}},
+    {"id": "pune-metro-phase-2-2a-2b", "programme": "Pune Metro Phase-2: Vanaz–Chandani Chowk (2A) and Ramwadi–Wagholi/Vitthalwadi (2B)", "amount_inr": 36262400000,
+     "source_label": "PIB: Cabinet approves Pune Metro Rail Project Phase-2 (Corridors 2A and 2B)", "source_url": "https://www.pib.gov.in/PressReleasePage.aspx?PRID=2139488&reg=48&lang=2",
+     "match": {"city": "Pune", "category": "transit", "title_any": ["2B", "2A", "Chandani", "Wagholi", "Vitthalwadi"]}},
+    {"id": "bengaluru-metro-phase-3", "programme": "Bengaluru Metro Phase-3: two corridors (44.65 km, 31 stations)", "amount_inr": 156110000000,
+     "source_label": "PMIndia: Cabinet approves two corridors of Bangalore Metro Phase-3", "source_url": "https://www.pmindia.gov.in/en/news_updates/cabinet-approves-two-corridors-of-bangalore-metro-rail-project-phase-3-project-for-44-65-km-with-31stations/",
+     "match": {"city": "Bengaluru", "category": "transit", "title_any": ["Orange Line", "ORR-West", "Phase 3", "Phase-3", "Phase III"]}}
+  ]
+}
